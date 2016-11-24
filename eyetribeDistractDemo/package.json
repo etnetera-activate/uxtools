@@ -1,13 +1,14 @@
 {
-  "name": "eyetribeDistrackDemo",
+  "name": "eyetribeDistractDemo",
   "version": "0.0.1",
   "description": "demo pouziti eyetribe",
   "main": "server.js",
   "dependencies": {
-    "socket.io": "^0.9.16"
+    "socket.io": "^0.9.16",
+    "sleep": "^5.0.0"
+
   },
   "devDependencies": {
-    "sleep": "^5.0.0"
   },
   "scripts": {
     "test": "node server.js simulate",
