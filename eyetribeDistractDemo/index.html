@@ -1,0 +1,173 @@
+<html>
+	<head>
+	<title>TheEyeTribe Distraction DEMO</title>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+		<script type='text/javascript' src="http://localhost:8080/socket.io/socket.io.js"></script>
+		<script type='text/javascript' src="heatmap.js"></script>
+		<script type='text/javascript'>
+
+			// predpokladame obrazky, ktere se vejdou na obrazovku.
+			var config = [
+				{
+				 "level":"hard",
+				 "url":"imgs/img1.jpg", // holka
+				 "zones":  
+				 	[	
+				 		{type:"target",  id:"text",area:[10,780,400,900]},  //souradnicerohu [x1,y1,x2,y2]
+				 		{type:"distract",id:"tits",area:[880,640,1180,830]},
+				 		{type:"distract",id:"face",area:[1200,180,1400,470]}
+				 	],
+				 "task":"3 + 15 - 12 = ?",
+				 "result": "6"
+				 }
+				]
+
+			//results of point analyse
+			var zoneResult={}; //vysledky zon
+			firstTime = null;
+		  	lastTime = null
+		  	totalPoint = 0;
+
+		  	//data from eyetracker
+			var data = []; //empty array for tracked data
+
+
+			var appState = "INIT";
+			
+
+			var configVariant = 0; //HACK: NASTAVENI JAKY JE OBRAZEK NATVRDO
+			var cfg = config[configVariant]; //aktualni konfigurace
+
+			//globalni promene, inicializuji se v document.ready
+			var canvas = null;
+	  		var ctx = null;
+
+	  		//vykresli zony a data, analyzuje a vysledky zapise do zoneResult
+			function analyzeZones(){
+				console.log('Analysing zones');
+
+		  		//draw target zone
+		  		ctx.beginPath();
+	
+		  		//draw  zones and init zoneResult
+		  		firstTime = data[0].timestamp;
+		  		lastTime = data[data.length-1].timestamp;
+		  		totalPoint = data.length;
+
+		  		for (var j=0;j<cfg.zones.length;j++){
+		  			console.log("Drawing zone");
+		  			zone = cfg.zones[j];
+			  		ctx.beginPath();
+			  		ctx.lineWidth = 5;
+			  		if (zone.type=='target'){
+			  			ctx.strokeStyle = '#00ff00';	
+			  		} else if(zone.type=="distraction") {
+			  			ctx.strokeStyle = '#ff0000';
+			  		}
+					
+					ctx.rect(zone.area[0],zone.area[1],Math.abs(zone.area[2]-zone.area[0]),Math.abs(zone.area[3]-zone.area[1]));
+					ctx.stroke();
+
+					//init zoneResult object
+					zoneResult[zone.id]  =  {id:zone.id};
+					zoneResult[zone.id].firstTime  = new Date(); 
+					zoneResult[zone.id].totalPoint = 0;
+				}
+
+		  		//draw points
+		  		//iterate through data
+				for(var i=0;i<data.length;i++){
+					var x=Math.floor(data[i].avg.x);
+					var y=Math.floor(data[i].avg.y);
+					var color = '#888888';
+					for (var j=0;j<cfg.zones.length;j++){
+		  				zone = cfg.zones[j];
+		  				if((x>=zone.area[0])&&(x<=zone.area[2])&&(y>=zone.area[1])&&(y<=zone.area[3])){
+		  					if (zone.type=='target'){
+			  					color = '#00ff00';	
+			  				} else if(zone.type=="distract") {
+			  					color = '#ff0000';
+			  				}
+
+			  				zoneResult[zone.id].totalPoint++;
+			  				
+			  				if(data[i].timestamp < zoneResult[zone.id].firstTime) {
+			  					zoneResult[zone.id].firstTime = data[i].timestamp;
+			  				}
+		  				}
+		  			}
+
+
+					//sleep(100);
+					ctx.beginPath();
+					ctx.lineWidth = 3;
+					ctx.strokeStyle = color;
+					ctx.arc(x,y,10,0,2*Math.PI);
+					ctx.stroke();
+
+				}
+
+				//print zone result
+				for (var j=0;j<cfg.zones.length;j++){
+					var zr = zoneResult[cfg.zones[j].id];
+					ctx.font = "18px Arial";
+					ctx.fillText(zr.totalPoint+"/"+totalPoint+". First after "+ (zr.firstTime - firstTime)/1000+"sec",
+						cfg.zones[j].area[0],
+						cfg.zones[j].area[1]-15
+					);					
+				}
+			}
+
+			//zahaji poslouchani dat v socketu a zapis do data[]
+			function trackData(){
+			  console.log("track start");
+			  var socket = io.connect('http://localhost:8080');	
+			  console.log("socket ready");
+			  socket.on('frame', function (eyedata) {
+			  	if (appState=="TRACK"){
+			  		eyedata.timestamp=new Date();
+			  		data.push(eyedata);
+			  		//console.log(eyedata.avg);
+			  	}
+			  });
+			}; 
+			
+			//vypise ulohu do oblasti testu
+			function drawText(){
+		  		ctx.font = "50px Arial";
+		  		//TODO: vycentrovat text v oblasti automaticky
+				ctx.fillText(cfg.task,cfg.zones[0].area[0]+30,cfg.zones[0].area[1]+80); //HACK: predpokladam, ze cilova zone je prvni. To nemusi byt nebo na to dat pozor
+			}
+
+			//pouze inicuje canvas
+			$(document).ready(function(){
+				console.log("Starting")
+				canvas = document.getElementById("myCanvas");
+	  			ctx = canvas.getContext("2d");
+				//TODO: zobrazit stranku s vyberem
+			});
+
+			$(document).click(function() {
+				console.log(appState);
+				if(appState=="INIT"){
+					//TODO: teprve ted by se mel jeste ukazat obrazek podle vyberu
+					appState = "TRACK"
+					drawText(); // vykresli ukol
+					trackData(); //zacni sbirat data
+				} else if(appState=="TRACK"){ 
+					appState="ANALYZE"; 
+	  				analyzeZones(); // vykresli zony
+				}
+			});
+
+			</script>
+		<style>
+		body {
+			background: url('imgs/img1.jpg') no-repeat left top;  
+		}
+		</style>
+	</head>
+	<body>
+	<canvas id="myCanvas" width="1900" height="1200"></canvas>
+	</body>
+</html>
