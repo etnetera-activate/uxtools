@@ -1,0 +1,128 @@
+/* COLLORS */
+
+body.easy {
+    background: url('../imgs/funny.gif') no-repeat center top;
+    background-size: cover;
+}
+body.hard {
+    background: url('../imgs/img1.jpg') no-repeat center top;
+    background-size: cover;
+}
+body.hardcore {
+    background: url('../imgs/img4.gif') no-repeat center top;
+    background-size: cover;
+}
+
+
+.container {
+    max-width: 1600px;
+    margin-left: auto;
+    margin-right: auto; }
+.container:after {
+    content: " ";
+    display: block;
+    clear: both; }
+
+#bullets {
+    display: block;
+    position: absolute;
+    top: 0;
+    width: 96%;
+    height: 40px;
+    padding: 30px;
+}
+.timer {
+    display: block;
+    width: 40px;
+    text-align: center;
+    height: 40px;
+    line-height: 42px;
+    background: #B9F394;
+    -webkit-border-radius: 20px;
+    -moz-border-radius: 20px;
+    border-radius: 20px;
+    border: 1px solid #8ceb4f;
+    margin: 0 auto;
+    font-size: 20px;
+    display: none;
+}
+
+.circle.active,
+.circle:hover {
+    width: 40px;
+    height: 40px;
+    background: #B9F394;
+    -webkit-border-radius: 20px;
+    -moz-border-radius: 20px;
+    border-radius: 20px;
+    border: 1px solid #8ceb4f;
+    text-align: center;}
+.circle.active p {
+    line-height: 42px;
+    font-weight: 700;
+    margin: 0px; }
+
+.circle {
+    display: block;
+    float: left;
+    width: 40px;
+    height: 40px;
+    background: #E0E0E0;
+    -webkit-border-radius: 20px;
+    -moz-border-radius: 20px;
+    border-radius: 20px;
+    border: 1px solid #bababa;
+    text-align: center;
+    margin-left: 5px;
+    text-decoration: none;
+    color: #000;
+}
+.circle.right {
+    float: right;
+}
+
+.circle p {
+    line-height: 42px;
+    margin: 0px; }
+
+.eye-area {
+    padding: 1rem;
+    -webkit-border-radius: 10px;
+    border-radius: 10px;
+    background-clip: padding-box;
+    /* stops bg color from leaking outside the border: */
+    background: rgba(185, 243, 148, 0.6);
+    border: 2px solid #b0f186;
+    -webkit-border-radius: 10px;
+    border-radius: 10px;
+    background-clip: padding-box;
+    /* stops bg color from leaking outside the border: */ }
+
+.welcome {
+    text-align: center;
+    padding-top: 9rem; }
+.welcome h1 {
+    font-size: 4rem;
+    margin-bottom: 0.4rem;
+    color: #545454; }
+.welcome p {
+    font-style: italic;
+    color: #545454; }
+
+.level {
+    margin: 0px auto;
+    text-align: center; }
+.level ul li {
+    display: inline-block;
+    padding: 2rem;
+    transition: 0.2s;
+    cursor: pointer; }
+.level ul li h3 {
+    color: #545454; }
+.level ul li img {
+    width: 75%; }
+.level ul li:hover {
+    transform: scale(1.3);
+    transition: 0.2s; }
+
+/*# sourceMappingURL=styles.css.map */

@@ -1,26 +1,58 @@
 <html>
 	<head>
-	<title>TheEyeTribe Distraction DEMO</title>
+		<meta content="width=device-width, initial-scale=1" name="viewport">
+		<title>TheEyeTribe Distraction DEMO</title>
+		<link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet">
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 		<script type='text/javascript' src="http://localhost:8080/socket.io/socket.io.js"></script>
-		<script type='text/javascript' src="heatmap.js"></script>
+
+		<link rel="stylesheet" href="styles/main.css">
 		<script type='text/javascript'>
 
 			// predpokladame obrazky, ktere se vejdou na obrazovku.
 			var config = [
 				{
-				 "level":"hard",
-				 "url":"imgs/img1.jpg", // holka
-				 "zones":  
-				 	[	
-				 		{type:"target",  id:"text",area:[10,780,400,900]},  //souradnicerohu [x1,y1,x2,y2]
-				 		{type:"distract",id:"tits",area:[880,640,1180,830]},
-				 		{type:"distract",id:"face",area:[1200,180,1400,470]}
-				 	],
-				 "task":"3 + 15 - 12 = ?",
-				 "result": "6"
-				 }
+					"level":"easy",
+					"url":"imgs/img1.jpg", // holka
+					"zones":
+						[
+							{type:"target",  id:"example",area:[10,200,400,320]},  //souradnicerohu [x1,y1,x2,y2]
+							{type:"distract",id:"girl",area:[850,120,1180,950]}
+						],
+					"task":"3 + 15 - 12 = ?",
+					"result": "6"
+				},
+				{
+					 "level":"hard",
+					 "url":"imgs/img1.jpg", // holka
+					 "zones":
+						[
+							{type:"target",  id:"example",area:[20,840,400,960]},  //souradnicerohu [x1,y1,x2,y2]
+							{type:"distract",id:"tits",area:[1000,760,1400,1000]},
+							{type:"distract",id:"face",area:[1420,200,1750,600]}
+						],
+					"task":"6 + 15 / 3 = ?",
+				 	"result": "11"
+				 },
+				{
+					"level":"hardcore",
+					"url":"imgs/img1.jpg", // holka
+					"zones":
+						[
+							{type:"target",  id:"example",area:[10,780,400,900]},  //souradnicerohu [x1,y1,x2,y2]
+							{type:"distract",id:"tits",area:[1050,600,1500,860]},
+							{type:"distract",id:"face",area:[1300,180,1600,470]}
+						],
+					"task":"33 / 3 + 3 = ?",
+					"result": "6"
+				}
 				]
+
+			var result = [50,500,450,700]
+
+
+			// set timer
+			var time = 10;
 
 			//results of point analyse
 			var zoneResult={}; //vysledky zon
@@ -60,11 +92,14 @@
 			  		ctx.beginPath();
 			  		ctx.lineWidth = 5;
 			  		if (zone.type=='target'){
-			  			ctx.strokeStyle = '#00ff00';	
-			  		} else if(zone.type=="distraction") {
-			  			ctx.strokeStyle = '#ff0000';
+			  			ctx.strokeStyle = '#B9F394';
+						ctx.fillStyle = "rgba(185, 243, 148, 0.3)";
+			  		} else if(zone.type=="distract") {
+			  			ctx.strokeStyle = '#d33333';
+						ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
 			  		}
-					
+
+					ctx.fillRect(zone.area[0],zone.area[1],Math.abs(zone.area[2]-zone.area[0]),Math.abs(zone.area[3]-zone.area[1]));
 					ctx.rect(zone.area[0],zone.area[1],Math.abs(zone.area[2]-zone.area[0]),Math.abs(zone.area[3]-zone.area[1]));
 					ctx.stroke();
 
@@ -84,7 +119,7 @@
 		  				zone = cfg.zones[j];
 		  				if((x>=zone.area[0])&&(x<=zone.area[2])&&(y>=zone.area[1])&&(y<=zone.area[3])){
 		  					if (zone.type=='target'){
-			  					color = '#00ff00';	
+			  					color = '#B9F394';
 			  				} else if(zone.type=="distract") {
 			  					color = '#ff0000';
 			  				}
@@ -110,11 +145,56 @@
 				//print zone result
 				for (var j=0;j<cfg.zones.length;j++){
 					var zr = zoneResult[cfg.zones[j].id];
-					ctx.font = "18px Arial";
-					ctx.fillText(zr.totalPoint+"/"+totalPoint+". First after "+ (zr.firstTime - firstTime)/1000+"sec",
-						cfg.zones[j].area[0],
-						cfg.zones[j].area[1]-15
-					);					
+					ctx.font = "20px Arial";
+
+					ctx.fillStyle = "rgba(0, 0, 0, 1)";
+					if (zr.totalPoint == 0) {
+						ctx.fillText(zr.totalPoint+"/"+totalPoint,
+								cfg.zones[j].area[0],
+								cfg.zones[j].area[1]-15
+						);
+					} else {
+						ctx.fillText(zr.totalPoint+"/"+totalPoint+". First after "+ (zr.firstTime - firstTime)/1000+" sec",
+								cfg.zones[j].area[0],
+								cfg.zones[j].area[1]-15
+						);
+					}
+
+				}
+
+				// print 1 rect with results
+				ctx.beginPath();
+				ctx.lineWidth = 5;
+				ctx.strokeStyle = '#888888';
+				ctx.fillStyle = "rgba(0, 0, 0, 0.8)";
+
+
+				ctx.fillRect(result[0],result[1],Math.abs(result[2]-result[0]),Math.abs(result[3]-result[1]));
+				ctx.rect(result[0],result[1],Math.abs(result[2]-result[0]),Math.abs(result[3]-result[1]));
+				ctx.stroke();
+				ctx.font = "30px Arial";
+				ctx.fillText("Final results",
+						result[0]+10,
+						result[1]-20
+				);
+				//print zone result
+				for (var j=0;j<cfg.zones.length;j++){
+					var zr = zoneResult[cfg.zones[j].id];
+					var liner = (j+1) * 30;
+					ctx.font = "20px Arial";
+					ctx.fillStyle = "rgba(255, 255, 255, 1)";
+					if (zr.totalPoint == 0) {
+						ctx.fillText(cfg.zones[j].id +": "+zr.totalPoint+"/"+totalPoint + "  Really ??",
+								result[0]+10,
+								result[1]+liner
+						);
+					} else {
+						ctx.fillText(cfg.zones[j].id +": "+zr.totalPoint+"/"+totalPoint+". First after "+ (zr.firstTime - firstTime)/1000+" sec",
+								result[0]+10,
+								result[1]+liner
+						);
+					}
+
 				}
 			}
 
@@ -134,9 +214,27 @@
 			
 			//vypise ulohu do oblasti testu
 			function drawText(){
+
 		  		ctx.font = "50px Arial";
 		  		//TODO: vycentrovat text v oblasti automaticky
 				ctx.fillText(cfg.task,cfg.zones[0].area[0]+30,cfg.zones[0].area[1]+80); //HACK: predpokladam, ze cilova zone je prvni. To nemusi byt nebo na to dat pozor
+			}
+
+			function timer() {
+				var $timer = $('.timer');
+
+				$timer.show().text(time);
+
+				var timing = setInterval(function(){
+					time = time - 1;
+					$timer.text(time);
+					if(time == 0 ) {
+						clearInterval(timing);
+						window.location.hash = "analyze";
+						$(window).trigger('hashchange');
+						$timer.hide();
+					}
+				}, 1000);
 			}
 
 			//pouze inicuje canvas
@@ -147,28 +245,88 @@
 				//TODO: zobrazit stranku s vyberem
 			});
 
-			$(document).click(function() {
+
+			$(window).bind('hashchange', function() {
 				console.log(appState);
+
+				var hash = window.location.hash.replace(/^#/,'');
+
 				if(appState=="INIT"){
-					//TODO: teprve ted by se mel jeste ukazat obrazek podle vyberu
+
+					switch(hash) {
+						case "easy":
+
+							cfg = config[0];
+							break;
+						case "hard":
+							cfg = config[1];
+							break;
+						case "hardcore":
+							cfg = config[2];
+							break;
+						default:
+
+					}
+
+
+					$('body').addClass(hash);
+					$('#init').hide();
+					$('#myCanvas').show();
+					$('.circle').removeClass('active');
+					$('.circle.second').addClass('active');
 					appState = "TRACK"
+					timer();  // zapni odpocet
 					drawText(); // vykresli ukol
 					trackData(); //zacni sbirat data
+
 				} else if(appState=="TRACK"){ 
-					appState="ANALYZE"; 
+					appState="ANALYZE";
+
+					$('.circle').removeClass('active');
+					$('.circle.third').addClass('active');
+
 	  				analyzeZones(); // vykresli zony
 				}
 			});
 
 			</script>
-		<style>
-		body {
-			background: url('imgs/img4.gif') no-repeat right top;
-			background-size: contain;  
-		}
-		</style>
 	</head>
 	<body>
-	<canvas id="myCanvas" width="1900" height="1200"></canvas>
+	<div id="bullets">
+		<a href="" class="circle right"><p>X</p></a>
+		<div class="circle active first"><p>1</p></div>
+		<div class="circle second"><p>2</p></div>
+		<div class="circle third"><p>3</p></div>
+		<div class="timer"></div>
+	</div>
+	<div id="init">
+		<div class="welcome">
+			<h1>Chcete si otestovat pozornost ? </h1>
+			<p>Vyberte úroveň </p>
+		</div>
+		<div class="level">
+			<ul class="menu">
+				<li>
+					<a href="#easy" data-level="easy">
+						<img src="imgs/web/easy.png" alt="">
+						<h3>Easy</h3>
+					</a>
+				</li>
+				<li>
+					<a href="#hard" data-level="hard">
+						<img src="imgs/web/hard.png" alt="">
+						<h3>Hard</h3>
+					</a>
+				</li>
+				<li>
+					<a href="#hardcore" data-level="hardcore">
+						<img src="imgs/web/core.png" alt="">
+						<h3>Hard Core</h3>
+					</a>
+				</li>
+			</ul>
+		</div>
+	</div>
+	<canvas id="myCanvas" width="1900" height="1200" style="display: none"></canvas>
 	</body>
 </html>
